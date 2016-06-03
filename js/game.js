@@ -16,6 +16,16 @@ function init() {
   }
 }
 
+
+function spotIt (i){
+   var spot = ['#spotOne', '#spotTwo', '#spotThree'];
+   $(spot[i]).find('div').attr('id', 'winner');
+   $(spot[i]).find('img').attr('src', 'images/slash/owlslash250.png');
+   setTimeout(function(){$(spot[i]).find('img').attr('src', 'images/slash/slash250.png');
+   },1000);
+ }
+
+
 var Shuffler = {
 
   options: [],
@@ -24,10 +34,11 @@ var Shuffler = {
   getOptions: function() {
     var query = window.location.search.substring(1);
     var vars = query.split("&");
-    for (var i=0; i<vars.length; i++) {
-      var pair = vars[i].split("=");
-      this.options[i] = pair[1]
-    }
+    var that = this;
+    vars.forEach(function(item, idx){
+      var pair = item.split("=");
+      that.options[idx] = pair[1];
+    });
   },
 
   parseOptions: function(options) {
@@ -40,34 +51,16 @@ var Shuffler = {
     } else {
       speed = 250;
       speedFactor = 2000;
-    };
+    }
     this.classTime = speed - 20;
     shuffles = parseInt(this.options[0]);
     return speed, speedFactor, shuffles;
   },
 
-  assignRightAnswer: function() {
-    var randomNumber = Math.floor(Math.random()*3);
-    if (randomNumber === 0 ){
-      spotOne.children[0].setAttribute('id', 'winner');
-      spotOne.children[0].children[0].src = 'images/slash/owlslash250.png';
-      setTimeout(function(){
-      spotOne.children[0].children[0].src = 'images/slash/slash250.png'
-      },1000);
-    } else if(randomNumber === 1){
-      spotTwo.children[0].setAttribute('id', 'winner');
-      spotTwo.children[0].children[0].src = 'images/slash/owlslash250.png'
-      setTimeout(function(){
-      spotTwo.children[0].children[0].src = 'images/slash/slash250.png'
-      },1000);
-    } else if(randomNumber === 2){
-      spotThree.children[0].setAttribute('id', 'winner');
-      spotThree.children[0].children[0].src = 'images/slash/owlslash250.png'
-      setTimeout(function(){
-      spotThree.children[0].children[0].src = 'images/slash/slash250.png'
-      },1000);
-    }
-  },
+   assignRightAnswer: function () {
+       var randomNumber = Math.floor(Math.random()*3);
+       spotIt(randomNumber);
+     },
 
   shuffle: function(s, i) {
      setTimeout(function () {
@@ -77,7 +70,7 @@ var Shuffler = {
         } else {
           guessing = true;
         }
-     }, s)
+     }, s);
   },
 
   runGame: function() {
@@ -107,7 +100,7 @@ var Shuffler = {
       childOfSpotThree.style.animation = null;
       spotOne.appendChild(childOfSpotThree);
       spotThree.appendChild(childOfSpotOne);
-    }, this.classTime)
+    }, this.classTime);
   },
 
   animateSecondToOne: function(childOfSpotOne, childOfSpotTwo) {
@@ -118,7 +111,7 @@ var Shuffler = {
       childOfSpotOne.style.animation = null;
       spotOne.appendChild(childOfSpotTwo);
       spotTwo.appendChild(childOfSpotOne);
-    }, this.classTime)
+    }, this.classTime);
   },
 
   animateSecondToThird: function(childOfSpotTwo, childOfSpotThree) {
@@ -129,7 +122,7 @@ var Shuffler = {
       childOfSpotThree.style.animation = null;
       spotTwo.appendChild(childOfSpotThree);
       spotThree.appendChild(childOfSpotTwo);
-    }, this.classTime)
+    }, this.classTime);
   }
 };
 
@@ -153,10 +146,13 @@ var Responder = {
     this.feedback.innerHTML = '<a href="scores.html" class="lose">You lose! <br />Your score is ' + score + '.<br />Click to see high scores.</a>';
   },
 
-  spotOneClick: function() {
+
+  spotClick: function() {
     if(guessing) {
       Responder.reveal();
-      if(spotOne.children[0].id === 'winner'){
+      console.log(this);
+
+      if($(this).find('div').attr('id') === 'winner'){
         score = speedFactor * shuffles;
         if (Responder.isHighScore(score)) {
           Responder.winHS();
@@ -171,44 +167,10 @@ var Responder = {
     return score;
   },
 
-  spotTwoClick: function() {
-    if(guessing) {
-      Responder.reveal();
-      if(spotTwo.children[0].id === 'winner'){
-        score = speedFactor * shuffles;
-        if (Responder.isHighScore(score)) {
-          Responder.winHS();
-        } else {
-          Responder.winNHS();
-        }
-      } else {
-        Responder.lose();
-      }
-    }
-    guessing = false;
-    return score;
-  },
-
-  spotThreeClick: function() {
-    if(guessing) {
-      Responder.reveal();
-      if(spotThree.children[0].id === 'winner'){
-        score = speedFactor * shuffles;
-        if (Responder.isHighScore(score)) {
-          Responder.winHS();
-        } else {
-          Responder.winNHS();
-        }
-      } else {
-        Responder.lose();
-      }
-    }
-    guessing = false;
-    return score;
-  },
 
   reveal: function() {
     var winnerReveal = document.getElementById('winner');
+
     winnerReveal.children[0].src = 'images/slash/owlslash250.png';
   },
 
@@ -247,12 +209,11 @@ var Responder = {
   }
 };
 
-spotOne.addEventListener('click', Responder.spotOneClick);
-spotTwo.addEventListener('click', Responder.spotTwoClick);
-spotThree.addEventListener('click', Responder.spotThreeClick);
+$('#spotOne').on('click', Responder.spotClick);
+$('#spotTwo').on('click', Responder.spotClick);
+$('#spotThree').on('click', Responder.spotClick);
 
 init();
 setTimeout(function(){
   Shuffler.runGame();
 }, 500);
-
